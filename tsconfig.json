@@ -2,7 +2,7 @@
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
     // File Layout
-    "rootDir": "Typescript_in/src",
+    "rootDir": "./src",
     "outDir": "./build/js",
 
     // Environment Settings
@@ -41,7 +41,7 @@
     "moduleDetection": "auto",
     "skipLibCheck": true,
   },
-  "include":[
-    "Typescript_in/src"
+  "include": [
+    "src"
   ]
 }
