@@ -10,6 +10,7 @@
     "module": "esnext",
     "target": "esnext",
     "lib": ["DOM", "ESNext"],
+    "types": ["node"],
     // For nodejs:
     // "lib": ["esnext"],
     // "types": ["node"],
