@@ -4,6 +4,7 @@ import Counter from "./components/Counter";
 import DebouncedSearch from "./components/DebouncedSearch";
 import { AuthProvider, useAuth } from "./auth/AuthContext";
 import UserList from "./components/Usememo";
+import UsereducerDemo from "./components/UsereducerDemo";
 
 const Profile = () => {
   const { user, login, logout } = useAuth();
@@ -26,6 +27,7 @@ function App() {
         <Counter />
         <DebouncedSearch />
         <UserList/>
+        <UsereducerDemo />
       </div>
     </AuthProvider>
   );
