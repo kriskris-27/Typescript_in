@@ -22,3 +22,14 @@ function logP(p:Point){
 
 const myObj = {x:10,y:40,z:20}
 
+interface BaseEntity{
+        id:string,
+        createdAt:Date
+}
+
+interface Product extends BaseEntity {
+    name:string,
+    price:number
+}
+
+const myprod:Product = {id:"1",createdAt:new Date(),name:"bike",price:500000}
