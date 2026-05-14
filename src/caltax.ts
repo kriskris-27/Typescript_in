@@ -6,6 +6,7 @@
 //     role: "admin" | "user"
 // } 
 
+
 // const newuser:User[] = [{id:2,name:"kris",email:"ex@gmail.com",role:"admin"},{id:3,name:"john",role:"user"}]
 
 // console.log(newuser)
@@ -46,4 +47,77 @@
 
 // const val = processinput(["1","2"])
 // console.log(val)
+
+// interface emailnot{
+//     type:"email",
+//     recipient:string,
+//     body:string
+// }
+
+// interface smsnot{
+//     type:"sms",
+//     phonenum:string,
+//     body:string
+// }
+
+// type notification = emailnot | smsnot
+
+// function notireader(note:notification){
+//     if(note.type=="email")
+//         console.log(`sending email to :${note.recipient}`)
+//     else console.log(`sending sms to :${note.phonenum}`)
+// }
+
+// const inp:emailnot= {type:"email",recipient:"kris@gmail.com",body:"lub u kris"}
+// const noti = notireader(inp)
+
+
+// function genric<T>(input:T):T[]{
+//     return [input]
+// }
+
+// const num:number[]=genric(5)
+// const st:string[]=genric("hello")
+
+// console.log(num,st);
+
+
+// interface Apiresponse<T>{
+//     data:T,
+//     status:"success" | "error",
+//     timestamp: Date
+// }
+
+// interface User{
+//     id:number,
+//     name:string
+// }
+
+// interface Product{
+//     id:number,
+//     price:number
+// }
+
+// const newuser:Apiresponse<User>={data:{id:1,name:"kris"},status:"success",timestamp:new Date}
+
+// const newprod:Apiresponse<Product>={data:{id:1,price:1000},status:"success",timestamp:new Date}
+
+// console.log(newuser.data.name)
+// console.log(newprod.data.price)
+
+
+function getval<T,K extends keyof T >(obj:T,key:K):T[K]{
+    return obj[key]
+}
+
+interface User{
+    id:number,
+    name:string,
+    role:"admin"
+}
+
+const newuser:User={id:101,name:"Kris",role:"admin"}
+
+console.log(getval(newuser,"name"));
+console.log(getval(newuser,"id"));
 
