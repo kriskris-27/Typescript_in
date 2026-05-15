@@ -106,18 +106,64 @@
 // console.log(newprod.data.price)
 
 
-function getval<T,K extends keyof T >(obj:T,key:K):T[K]{
-    return obj[key]
-}
+// function getval<T,K extends keyof T >(obj:T,key:K):T[K]{
+//     return obj[key]
+// }
 
-interface User{
-    id:number,
-    name:string,
-    role:"admin"
-}
+// interface User{
+//     id:number,
+//     name:string,
+//     role:"admin"
+// }
 
-const newuser:User={id:101,name:"Kris",role:"admin"}
+// const newuser:User={id:101,name:"Kris",role:"admin"}
 
-console.log(getval(newuser,"name"));
-console.log(getval(newuser,"id"));
+// console.log(getval(newuser,"name"));
+// console.log(getval(newuser,"id"));
 
+
+// type HasTS = {
+//     createdAt:Date,
+//     updatedAt:Date
+// }
+
+// type UserProfile = {
+//     username:string,
+//     email:string
+// }
+
+// type DbUser = HasTS & UserProfile
+
+// const newUser:DbUser = { createdAt : new Date(),updatedAt: new Date(),username:"Kris",email:"kris@example.com"}
+
+// function printId(id : number | string){
+//     if(typeof(id)==="number")
+//         return console.log(`ID is a number: ${id*10}`)
+//     else
+//         return console.log(`ID is a string: ${id.toUpperCase()}`)
+// }
+
+// const defaultHeaders = { 
+//     "Content-Type": "application/json",
+//     Authorization: "Bearer token"
+// }
+
+// type Apiheaders = typeof defaultHeaders;
+
+// function sendrequest(reqdata:Apiheaders){
+//     console.log(reqdata)    
+// }
+
+
+// interface BigDatabaseResponse {
+//     meta: { status: number; requestId: string };
+//     payload: {
+//         account: {
+//             permissions: "read" | "write" | "execute";
+//             isActive: boolean;
+//         }
+//     }
+// }
+// type AccountAccess = BigDatabaseResponse["payload"]["account"]
+
+// const toaccess:AccountAccess = {permissions : "read",isActive:true}
