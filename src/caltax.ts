@@ -143,27 +143,27 @@
 //         return console.log(`ID is a string: ${id.toUpperCase()}`)
 // }
 
-// const defaultHeaders = { 
-//     "Content-Type": "application/json",
-//     Authorization: "Bearer token"
-// }
+const defaultHeaders = { 
+    "Content-Type": "application/json",
+    Authorization: "Bearer token"
+} as const
 
-// type Apiheaders = typeof defaultHeaders;
+type Apiheaders = typeof defaultHeaders;
 
-// function sendrequest(reqdata:Apiheaders){
-//     console.log(reqdata)    
-// }
+function sendrequest(reqdata:Apiheaders){
+    console.log(reqdata)    
+}
 
 
-// interface BigDatabaseResponse {
-//     meta: { status: number; requestId: string };
-//     payload: {
-//         account: {
-//             permissions: "read" | "write" | "execute";
-//             isActive: boolean;
-//         }
-//     }
-// }
-// type AccountAccess = BigDatabaseResponse["payload"]["account"]
+interface BigDatabaseResponse {
+    meta: { status: number; requestId: string };
+    payload: {
+        account: {
+            permissions: "read" | "write" | "execute";
+            isActive: boolean;
+        }
+    }
+}
+type AccountAccess = BigDatabaseResponse["payload"]["account"]
 
-// const toaccess:AccountAccess = {permissions : "read",isActive:true}
+const toaccess:AccountAccess = {permissions : "read",isActive:true}
