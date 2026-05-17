@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+      "target": "ES2022",                          /* Modern JS features */
+      "module": "NodeNext",                        /* Required for modern Node ESM resolution */
+      "moduleResolution": "NodeNext",
+      "rootDir": "./src",                          /* Source files location */
+      "outDir": "./dist",                          /* Compiled production JS files location */
+      "esModuleInterop": true,                     /* Emits additional JavaScript to ease support for importing CommonJS modules */
+      "forceConsistentCasingInFileNames": true,    /* Ensure cross-platform file system safety */
+      "strict": true,                              /* Enable all strict type-checking options */
+      "noImplicitAny": true,                       /* Raise error on expressions and declarations with an implied 'any' type */
+      "skipLibCheck": true                         /* Skip type checking of declaration files to speed up compilation */
+    },
+    "include": ["src/**/*"]
+  }
