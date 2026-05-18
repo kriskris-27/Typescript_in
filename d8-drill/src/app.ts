@@ -1,6 +1,5 @@
-import { NextFunction } from './../node_modules/@types/express-serve-static-core/index.d';
-import express,{Request , Response} from "express"
-import {infer, z} from "zod"
+import express,{Request , Response ,NextFunction} from "express"
+import {z} from "zod"
 
 const app = express()
 
@@ -18,14 +17,7 @@ class AppError extends Error{
 
 }
 
-function globalErrorhandler(err:any, req:Request , res:Response ,next:NextFunction):void {
-    if(err instanceof AppError){
-        res.status(err.statusCode).json({status:"fail",message:err.message})
-    }else{
-        res.status(500).json({message:"something went wrong"})
-    }
 
-}
 
 
 const ProductValidationSchema = z.object({
@@ -38,7 +30,35 @@ const ProductValidationSchema = z.object({
 type product = z.infer<typeof ProductValidationSchema>;
 
 const product1 :product={title:"a",price:10,tags:["hi","hello"],status:"in_stock"}
-console.log(product1)
+console.log("Before validation...")
+
+function validateProductData(rawData:any){
+    const result= ProductValidationSchema.safeParse(rawData)
+    if(result.success){
+        return{success:true,
+            data:result.data
+        }
+    }
+    else{
+        return{
+            success:false,
+            errors:result.error.format()
+        }
+    }
+}
+
+const result = validateProductData(product1)
+console.log(result)
+
+function globalErrorhandler(err:any, req:Request , res:Response ,next:NextFunction):void {
+    if(err instanceof AppError){
+        res.status(err.statusCode).json({status:"fail",message:err.message})
+    }else{
+        res.status(500).json({message:"something went wrong"})
+    }
+
+}
+app.use(globalErrorhandler)
 
 app.listen(3000,()=>{
     console.log("Listening on http://localhost:3000")
