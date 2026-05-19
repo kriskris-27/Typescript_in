@@ -3,6 +3,8 @@ import {z} from "zod"
 
 const app = express()
 
+app.use(express.json());
+
 app.get("/health" , (req:Request,res:Response):void=>{
     res.status(200).json({message:"health looks good hi"})
 })
@@ -49,6 +51,15 @@ function validateProductData(rawData:any){
 
 const result = validateProductData(product1)
 console.log(result)
+
+app.post("/products",(req:Request,res:Response,next:NextFunction)=>{
+    const data = req.body
+    const validate = validateProductData(data)
+    if(!validate.success){
+        return next(new AppError(400,JSON.stringify(validate.errors)))
+    }
+    res.status(201).json({status:"success",message:"Product created successfully",data:validate.data})
+})
 
 function globalErrorhandler(err:any, req:Request , res:Response ,next:NextFunction):void {
     if(err instanceof AppError){
