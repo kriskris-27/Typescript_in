@@ -10,7 +10,7 @@ export interface IUserRepository{
 }
 
 
-class UserRepo implements IUserRepository {
+export class UserRepo implements IUserRepository {
     private users:UserPro[] = [];
     save(user:UserPro){
         this.users.push(user)

@@ -13,6 +13,8 @@ app.get("/health" , (req:Request,res:Response):void=>{
 
 const userRepository = new UserRepo();
 const userService = new UserService(userRepository)
+
+
 class AppError extends Error{
     public readonly statusCode:number;
     constructor(statusCode:number, message:string) {
