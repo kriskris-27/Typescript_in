@@ -8,7 +8,8 @@ app.use(express.json());
 app.get("/health" , (req:Request,res:Response):void=>{
     res.status(200).json({message:"health looks good hi"})
 })
-
+const userRepository = new UserRepo();
+const userService = new UserService(userRepository)
 class AppError extends Error{
     public readonly statusCode:number;
     constructor(statusCode:number, message:string) {
@@ -18,7 +19,24 @@ class AppError extends Error{
     }
 
 }
-
+const userRepository = new UserRepo();
+const userService = new UserService(userRepository);
+app.post("/register", (req, res, next): void => {
+  const { username, email } = req.body;
+  const result = userService.registerUser({
+    id: crypto.randomUUID(),
+    username,
+    email,
+  });
+  if (!result.success) {
+    return next(new AppError(400, result.message));
+  }
+  res.status(201).json({
+    status: "success",
+    message: result.message,
+    data: { username, email }, // or whatever you saved
+  });
+});
 
 
 
