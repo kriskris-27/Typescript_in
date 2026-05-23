@@ -1,5 +1,6 @@
 import express,{Request , Response ,NextFunction} from "express"
 import {z} from "zod"
+import { UserService ,UserRepo } from "./user.app";
 
 const app = express()
 
@@ -8,6 +9,8 @@ app.use(express.json());
 app.get("/health" , (req:Request,res:Response):void=>{
     res.status(200).json({message:"health looks good hi"})
 })
+
+
 const userRepository = new UserRepo();
 const userService = new UserService(userRepository)
 class AppError extends Error{
@@ -19,8 +22,7 @@ class AppError extends Error{
     }
 
 }
-const userRepository = new UserRepo();
-const userService = new UserService(userRepository);
+
 app.post("/register", (req, res, next): void => {
   const { username, email } = req.body;
   const result = userService.registerUser({
