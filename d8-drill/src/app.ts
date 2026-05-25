@@ -11,8 +11,6 @@ app.get("/health" , (req:Request,res:Response):void=>{
 })
 
 
-const userRepository = new UserRepo();
-const userService = new UserService(userRepository)
 
 
 class AppError extends Error{
@@ -24,6 +22,9 @@ class AppError extends Error{
     }
 
 }
+
+const userRepository = new UserRepo();
+const userService = new UserService(userRepository)
 
 app.post("/register", (req, res, next): void => {
   const { username, email } = req.body;
@@ -38,7 +39,7 @@ app.post("/register", (req, res, next): void => {
   res.status(201).json({
     status: "success",
     message: result.message,
-    data: { username, email }, // or whatever you saved
+    data: { username, email },
   });
 });
 
