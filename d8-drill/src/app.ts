@@ -26,9 +26,9 @@ class AppError extends Error{
 const userRepository = new UserRepo();
 const userService = new UserService(userRepository)
 
-app.post("/register", (req, res, next): void => {
+app.post("/register",async (req, res, next): Promise<void> => {
   const { username, email } = req.body;
-  const result = userService.registerUser({
+  const result =await userService.registerUser({
     id: crypto.randomUUID(),
     username,
     email,
