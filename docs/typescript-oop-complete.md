@@ -1,77 +1,69 @@
-# Complete OOP in TypeScript — Study Guide
+# Learn OOP in TypeScript — Simple Guide
 
-A single reference from basics to patterns you use in backend code (like `d8-drill/src/user.app.ts`).
-
-**How to use this file**
-
-1. Read one section at a time.
-2. Type every example into a file such as `src/oop-practice.ts` — do not only read.
-3. After each section, do the **Try it** exercise before moving on.
-4. At the end, rebuild `UserRepo` + `UserService` from memory without looking.
+> **Goal:** Understand classes and patterns well enough to write code like `d8-drill/src/user.app.ts` on your own.
 
 ---
 
-## Table of contents
+## How to use this guide
 
-1. [What is OOP?](#1-what-is-oop)
-2. [Classes and objects](#2-classes-and-objects)
-3. [Encapsulation](#3-encapsulation)
-4. [Inheritance](#4-inheritance)
-5. [Polymorphism](#5-polymorphism)
-6. [Abstraction](#6-abstraction)
-7. [Interfaces vs abstract classes](#7-interfaces-vs-abstract-classes)
-8. [Composition vs inheritance](#8-composition-vs-inheritance)
-9. [Dependency injection](#9-dependency-injection)
-10. [Static members and singletons](#10-static-members-and-singletons)
-11. [Generics with classes](#11-generics-with-classes)
-12. [SOLID in TypeScript](#12-solid-in-typescript)
-13. [Common patterns](#13-common-patterns)
-14. [OOP vs functional style in TS](#14-oop-vs-functional-style-in-ts)
-15. [Practice roadmap](#15-practice-roadmap)
-
----
-
-## 1. What is OOP?
-
-**Object-Oriented Programming** organizes code around **objects** that combine:
-
-| Pillar | Meaning | TypeScript tool |
-|--------|---------|-----------------|
-| **Encapsulation** | Hide internal state; expose a safe API | `private`, `protected`, methods |
-| **Inheritance** | Reuse behavior from a parent type | `extends` |
-| **Polymorphism** | Same interface, different implementations | `implements`, method overrides |
-| **Abstraction** | Hide complexity behind a simple contract | `interface`, `abstract class` |
-
-TypeScript adds **types** on top of JavaScript classes. Types exist at compile time; classes exist at runtime.
-
----
-
-## 2. Classes and objects
-
-### Minimal class
-
-```typescript
-class Person {
-  name: string;
-  age: number;
-
-  constructor(name: string, age: number) {
-    this.name = name;
-    this.age = age;
-  }
-
-  greet(): string {
-    return `Hi, I'm ${this.name}`;
-  }
-}
-
-const p = new Person("Alex", 25);
-console.log(p.greet());
+```
+Read one lesson → Type the code yourself → Do the mini exercise → Move on
 ```
 
-### Parameter properties (shorthand)
+**Practice file:** `d8-drill/src/oop-practice.ts`  
+**Run it:** `npx ts-node src/oop-practice.ts`
 
-Instead of declaring fields and assigning in the constructor:
+Do **not** read all 759 lines in one sitting. One lesson per day is enough.
+
+---
+
+## What you actually need (honest answer)
+
+| Priority | Topic | Why |
+|----------|-------|-----|
+| **Must know** | Classes, `private`, interfaces, `implements`, constructor injection | Your `UserRepo` + `UserService` use these |
+| **Should know** | Encapsulation, polymorphism, repository pattern | Backend structure |
+| **Learn later** | Inheritance, abstract classes, generics, SOLID, singletons | Useful, not required on day 1 |
+
+You do **not** need to master all of OOP before building APIs.
+
+---
+
+## The big picture (read this first)
+
+Your drill project already uses good OOP. Here is the flow:
+
+```
+HTTP request (app.ts)
+       ↓
+  UserService        ← "Can we register this user?" (rules)
+       ↓
+  IUserRepository    ← contract (what storage must do)
+       ↓
+  UserRepo           ← actual storage (array in memory)
+```
+
+**Three layers — remember these names:**
+
+| Layer | Job | Your file |
+|-------|-----|-----------|
+| **Route** | HTTP in, HTTP out | `app.ts` |
+| **Service** | Business rules | `UserService` |
+| **Repository** | Save / find data | `UserRepo` |
+
+When you understand this diagram, you understand 80% of what you need.
+
+---
+
+# PART 1 — Start here (Day 1–2)
+
+---
+
+## Lesson 1: What is a class?
+
+**Plain English:** A class is a **blueprint**. You use `new` to create **objects** from it.
+
+Think: cookie cutter (class) → cookies (objects).
 
 ```typescript
 class Person {
@@ -84,204 +76,115 @@ class Person {
     return `Hi, I'm ${this.name}`;
   }
 }
+
+const alex = new Person("Alex", 25);
+console.log(alex.greet()); // "Hi, I'm Alex"
 ```
 
-`public` / `private` / `protected` on constructor parameters automatically create and assign fields.
+**Words to know**
 
-### `this`
+| Word | Meaning |
+|------|---------|
+| `class` | Blueprint for objects |
+| `constructor` | Runs when you `new` — sets up the object |
+| `this` | "This specific object" inside a method |
+| `new Person(...)` | Create one object from the class |
 
-Inside methods, `this` refers to the current instance. Arrow functions on classes capture `this` from the enclosing scope (useful for callbacks).
+**Key takeaway:** Class = template. Object = one real instance.
+
+### Mini exercise
+
+Create `BankAccount` with:
+- starting balance in constructor
+- `deposit(amount)` — add money
+- `withdraw(amount)` — refuse if not enough money
+- `getBalance()` — return current balance
+
+<details>
+<summary>Solution (peek only after you try)</summary>
 
 ```typescript
-class Counter {
-  count = 0;
+class BankAccount {
+  constructor(private balance: number) {}
 
-  increment = (): void => {
-    this.count += 1;
-  };
+  deposit(amount: number): void {
+    this.balance += amount;
+  }
+
+  withdraw(amount: number): void {
+    if (amount > this.balance) throw new Error("Not enough money");
+    this.balance -= amount;
+  }
+
+  getBalance(): number {
+    return this.balance;
+  }
 }
 ```
 
-### **Try it**
-
-Create `class BankAccount` with `balance`, `deposit(amount)`, and `withdraw(amount)` that refuses overdraft.
+</details>
 
 ---
 
-## 3. Encapsulation
+## Lesson 2: Hide data with `private` (Encapsulation)
 
-**Goal:** callers cannot corrupt internal state directly.
+**Plain English:** Don't let outside code touch your internal list directly. Only use your methods.
 
-### Access modifiers
+**Bad — anyone can break the array:**
+```typescript
+repo.users.push({ email: "hacked" }); // should not be allowed
+```
 
-| Modifier | Class | Subclass | Outside |
-|----------|-------|----------|---------|
-| `public` | yes | yes | yes (default) |
-| `protected` | yes | yes | no |
-| `private` | yes | no | no |
-| `#field` | yes | no | no (true private at runtime) |
-
+**Good — only `save()` can change data:**
 ```typescript
 class UserRepo {
-  private users: { id: string; email: string }[] = [];
+  private users: { email: string }[] = [];  // hidden
 
-  save(user: { id: string; email: string }): void {
+  save(user: { email: string }): void {
     this.users.push(user);
   }
-
-  findByEmail(email: string) {
-    return this.users.find((u) => u.email === email);
-  }
-}
-
-const repo = new UserRepo();
-// repo.users.push(...)  // Error: 'users' is private
-```
-
-### `readonly`
-
-```typescript
-class Order {
-  constructor(public readonly id: string) {}
-}
-
-const o = new Order("ord_1");
-// o.id = "x";  // Error
-```
-
-### Getters and setters
-
-```typescript
-class Product {
-  constructor(private _price: number) {}
-
-  get price(): number {
-    return this._price;
-  }
-
-  set price(value: number) {
-    if (value <= 0) throw new Error("Price must be positive");
-    this._price = value;
-  }
 }
 ```
 
-### **Try it**
+**Access words**
 
-`class Temperature` stores Celsius privately; expose `fahrenheit` getter/setter.
+| Keyword | Who can use it? |
+|---------|-----------------|
+| `public` | Everyone (default) |
+| `private` | Only inside this class |
+| `protected` | This class + child classes (rare for beginners) |
+
+**Key takeaway:** `private` = "keep internal stuff internal."
+
+### Mini exercise
+
+`class Wallet` — `private cash`. Public `add()` and `spend()`. No direct access to `cash`.
 
 ---
 
-## 4. Inheritance
+## Lesson 3: Interfaces — a promise of what methods exist
 
-A **subclass** extends a **superclass** and inherits fields and methods.
+**Plain English:** An interface is a **contract**. It says: "Any class that implements me must have these methods."
 
-```typescript
-class Animal {
-  constructor(public name: string) {}
-
-  move(distance: number): void {
-    console.log(`${this.name} moved ${distance}m`);
-  }
-}
-
-class Dog extends Animal {
-  bark(): void {
-    console.log(`${this.name} says woof`);
-  }
-}
-
-const d = new Dog("Rex");
-d.move(5);
-d.bark();
-```
-
-### `super`
-
-Call the parent constructor and methods:
-
-```typescript
-class Employee extends Person {
-  constructor(
-    name: string,
-    age: number,
-    public employeeId: string
-  ) {
-    super(name, age); // must run before using `this`
-  }
-
-  greet(): string {
-    return `${super.greet()} (ID: ${this.employeeId})`;
-  }
-}
-```
-
-### Method overriding
-
-```typescript
-class Shape {
-  area(): number {
-    return 0;
-  }
-}
-
-class Circle extends Shape {
-  constructor(public radius: number) {
-    super();
-  }
-
-  override area(): number {
-    return Math.PI * this.radius ** 2;
-  }
-}
-```
-
-Use `override` keyword (TypeScript 4.3+) so typos in method names are caught.
-
-### **Try it**
-
-`Vehicle` → `Car` and `Bike` with different `describe()` strings.
-
----
-
-## 5. Polymorphism
-
-**Polymorphism** = many shapes, one interface. Code depends on a **type contract**, not a concrete class.
-
-```typescript
-interface Notifier {
-  send(message: string): void;
-}
-
-class EmailNotifier implements Notifier {
-  send(message: string): void {
-    console.log("Email:", message);
-  }
-}
-
-class SmsNotifier implements Notifier {
-  send(message: string): void {
-    console.log("SMS:", message);
-  }
-}
-
-function alertUser(notifier: Notifier, text: string): void {
-  notifier.send(text); // works for any Notifier
-}
-
-alertUser(new EmailNotifier(), "Hello");
-alertUser(new SmsNotifier(), "Hello");
-```
-
-### `implements`
+It has **no code inside** — just shapes.
 
 ```typescript
 interface IUserRepository {
   save(user: { email: string }): Promise<void>;
   findByEmail(email: string): Promise<{ email: string } | undefined>;
 }
+```
 
-class InMemoryUserRepo implements IUserRepository {
+This does **not** store users. It only describes what a repository must do.
+
+**Key takeaway:** Interface = checklist of methods.
+
+---
+
+## Lesson 4: `implements` — class fulfills the contract
+
+```typescript
+class UserRepo implements IUserRepository {
   private users: { email: string }[] = [];
 
   async save(user: { email: string }): Promise<void> {
@@ -294,332 +197,148 @@ class InMemoryUserRepo implements IUserRepository {
 }
 ```
 
-This is the same idea as your `UserRepo implements IUserRepository`.
+TypeScript will **error** if you forget a method from the interface. That is the point.
 
-### **Try it**
+**This is exactly your `user.app.ts` pattern.**
 
-`interface PaymentProcessor` with two implementations; one function `checkout(processor, amount)`.
+**Key takeaway:** `implements` = "I promise to provide every method on the interface."
 
----
+### Mini exercise
 
-## 6. Abstraction
+1. Write `interface ITodoRepository` with `save` and `findById`
+2. Write `InMemoryTodoRepository` that implements it with a private array
 
-**Abstraction** = expose *what* something does, hide *how*.
-
-### Abstract class
-
-Cannot be instantiated directly. Can define abstract methods (no body) that subclasses must implement.
-
-```typescript
-abstract class BaseRepository<T> {
-  protected items: T[] = [];
-
-  abstract findById(id: string): T | undefined;
-
-  save(item: T): void {
-    this.items.push(item);
-  }
-}
-
-class TodoRepo extends BaseRepository<{ id: string; title: string }> {
-  findById(id: string) {
-    return this.items.find((t) => t.id === id);
-  }
-}
-```
-
-### When to use abstract class vs interface
-
-| Use | Prefer |
-|-----|--------|
-| Contract only, no shared code | `interface` |
-| Shared base logic + forced overrides | `abstract class` |
-| Multiple unrelated types | `interface` |
+(See `oop-practice.ts` Level 2 for a full example.)
 
 ---
 
-## 7. Interfaces vs abstract classes
+## Lesson 5: Service class — business rules
 
-### Interface
-
-- No runtime code (erased after compile).
-- A class can `implements` many interfaces.
-- Best for contracts: repositories, services, adapters.
-
-```typescript
-interface Identifiable {
-  id: string;
-}
-
-interface Timestamped {
-  createdAt: Date;
-}
-
-class Post implements Identifiable, Timestamped {
-  constructor(
-    public id: string,
-    public createdAt: Date,
-    public title: string
-  ) {}
-}
-```
-
-### Abstract class
-
-- Exists at runtime.
-- Single inheritance (`extends` one class).
-- Can have concrete methods and fields.
-
-```typescript
-abstract class HttpClient {
-  abstract get(url: string): Promise<unknown>;
-
-  async getJson<T>(url: string): Promise<T> {
-    const data = await this.get(url);
-    return data as T;
-  }
-}
-```
-
-### **Try it**
-
-Define `IStorage` with `get`/`set`. Implement `MemoryStorage` and use it in a `SettingsService`.
-
----
-
-## 8. Composition vs inheritance
-
-**Inheritance** = "is-a" (`Dog is an Animal`).  
-**Composition** = "has-a" (`Car has an Engine`).
-
-Prefer **composition** when behavior should be swapped or combined without deep class trees.
-
-```typescript
-class Logger {
-  log(msg: string): void {
-    console.log(msg);
-  }
-}
-
-class OrderService {
-  constructor(private logger: Logger) {}
-
-  createOrder(id: string): void {
-    this.logger.log(`Order ${id} created`);
-  }
-}
-```
-
-Deep inheritance chains (`AdminUser extends User extends Entity`) become hard to change. Composition + interfaces stay flexible.
-
----
-
-## 9. Dependency injection
-
-**Dependency Injection (DI)** = give a class its dependencies from outside instead of `new` inside.
-
-### Bad: tight coupling
-
-```typescript
-class UserService {
-  private repo = new PostgresUserRepo(); // hard to test or swap
-}
-```
-
-### Good: constructor injection
+**Plain English:** The service asks questions like "Is this email already taken?" The repository only saves and finds.
 
 ```typescript
 class UserService {
   constructor(private userRepo: IUserRepository) {}
 
-  async registerUser(user: { email: string }): Promise<{ success: boolean }> {
-    if (await this.userRepo.findByEmail(user.email)) {
-      return { success: false };
+  async registerUser(user: { email: string }) {
+    const existing = await this.userRepo.findByEmail(user.email);
+
+    if (existing) {
+      return { success: false, message: "User already registered" };
     }
+
     await this.userRepo.save(user);
-    return { success: true };
+    return { success: true, message: "User added" };
   }
 }
+```
 
-// Wiring at app startup (composition root)
-const repo = new InMemoryUserRepo();
+**Rule:** Service never touches the array directly. It always goes through `userRepo`.
+
+**Key takeaway:** Service = rules. Repository = storage.
+
+---
+
+## Lesson 6: Dependency injection — pass things in, don't create inside
+
+**Plain English:** Give the service its repository from **outside**. Don't `new UserRepo()` inside `UserService`.
+
+```typescript
+// BAD — stuck with one implementation
+class UserService {
+  private repo = new UserRepo();
+}
+
+// GOOD — flexible and testable
+class UserService {
+  constructor(private userRepo: IUserRepository) {}
+}
+
+// Wire up once at app startup (in app.ts)
+const repo = new UserRepo();
 const service = new UserService(repo);
 ```
 
-Your `d8-drill` code:
+**Why it matters:** Tomorrow you swap `UserRepo` for Postgres. `UserService` stays the same.
 
-```text
-app.ts          → creates UserRepo, UserService
-user.app.ts     → UserService depends on IUserRepository, not Postgres
-```
-
-### Testing with a fake
-
-```typescript
-class FakeUserRepo implements IUserRepository {
-  private users: UserPro[] = [];
-  async save(user: UserPro) {
-    this.users.push(user);
-  }
-  async findByEmail(email: string) {
-    return this.users.find((u) => u.email === email);
-  }
-}
-
-const service = new UserService(new FakeUserRepo());
-```
-
-### **Try it**
-
-`NotificationService` depends on `INotifier`. Inject a fake that records messages in an array.
+**Key takeaway:** Constructor injection = receive dependencies, don't build them inside.
 
 ---
 
-## 10. Static members and singletons
+## Part 1 checkpoint
 
-### Static
+Can you answer these without looking?
 
-Belong to the **class**, not each instance.
+1. What is the difference between a class and an object?
+2. Why is `users` private in `UserRepo`?
+3. What does `implements IUserRepository` mean?
+4. What does `UserService` do vs `UserRepo`?
+5. Why pass `userRepo` into the constructor?
 
-```typescript
-class MathUtil {
-  static PI = 3.14159;
-
-  static clamp(value: number, min: number, max: number): number {
-    return Math.min(max, Math.max(min, value));
-  }
-}
-
-console.log(MathUtil.PI);
-```
-
-### Singleton (use sparingly)
-
-One shared instance. Often replaced by DI in apps.
-
-```typescript
-class Config {
-  private static instance: Config;
-  private constructor(public apiUrl: string) {}
-
-  static getInstance(): Config {
-    if (!Config.instance) {
-      Config.instance = new Config("https://api.example.com");
-    }
-    return Config.instance;
-  }
-}
-```
+If yes → move to Part 2. If no → redo Lessons 1–6 with `oop-practice.ts`.
 
 ---
 
-## 11. Generics with classes
-
-Generics make classes reusable for any type while staying type-safe.
-
-```typescript
-class Stack<T> {
-  private items: T[] = [];
-
-  push(item: T): void {
-    this.items.push(item);
-  }
-
-  pop(): T | undefined {
-    return this.items.pop();
-  }
-}
-
-const nums = new Stack<number>();
-nums.push(1);
-nums.push(2);
-```
-
-```typescript
-abstract class Repository<T extends { id: string }> {
-  protected store: T[] = [];
-
-  save(entity: T): void {
-    this.store.push(entity);
-  }
-
-  findById(id: string): T | undefined {
-    return this.store.find((e) => e.id === id);
-  }
-}
-```
+# PART 2 — Build like your drill (Day 3–4)
 
 ---
 
-## 12. SOLID in TypeScript
+## Lesson 7: Wire it to Express
 
-| Principle | One line | Example |
-|-----------|----------|---------|
-| **S** Single Responsibility | One class, one reason to change | `UserRepo` only stores users; `UserService` only business rules |
-| **O** Open/Closed | Open for extension, closed for modification | Add `PostgresUserRepo` without editing `UserService` |
-| **L** Liskov Substitution | Subtypes must honor the contract | Any `IUserRepository` works wherever repo is expected |
-| **I** Interface Segregation | Small interfaces | Split `IReadRepo` / `IWriteRepo` if not all clients need both |
-| **D** Dependency Inversion | Depend on abstractions | `UserService` → `IUserRepository`, not `UserRepo` |
+```typescript
+// app.ts — composition root (where everything connects)
+const userRepository = new UserRepo();
+const userService = new UserService(userRepository);
 
-You do not need to memorize SOLID before writing code. Notice these patterns when you refactor.
+app.post("/register", async (req, res, next) => {
+  const result = await userService.registerUser({
+    id: crypto.randomUUID(),
+    username: req.body.username,
+    email: req.body.email,
+  });
+
+  if (!result.success) {
+    return next(new AppError(400, result.message));
+  }
+
+  res.status(201).json({ status: "success", message: result.message });
+});
+```
+
+**Who does what**
+
+| File | Responsibility |
+|------|----------------|
+| `app.ts` | HTTP status codes, JSON, create repo + service |
+| `UserService` | Duplicate email check |
+| `UserRepo` | Store in array |
+
+**Key takeaway:** Routes are thin. Rules live in the service.
 
 ---
 
-## 13. Common patterns
+## Lesson 8: Polymorphism — one slot, many implementations
 
-### Repository (you already use this)
-
-Hides data access behind an interface.
-
-```text
-Service → IUserRepository → UserRepo (memory) or PostgresUserRepo (later)
-```
-
-### Factory
-
-Creates objects without callers knowing the concrete class.
+**Plain English:** Write code against the **interface**, not the concrete class.
 
 ```typescript
-interface ILogger {
-  log(msg: string): void;
+function register(service: UserService, user: { email: string }) {
+  return service.registerUser(user);
 }
 
-class ConsoleLogger implements ILogger {
-  log(msg: string) {
-    console.log(msg);
-  }
-}
-
-class LoggerFactory {
-  static create(env: "dev" | "prod"): ILogger {
-    return env === "dev" ? new ConsoleLogger() : new ConsoleLogger();
-  }
-}
+// Works with ANY repo that implements IUserRepository:
+new UserService(new UserRepo());
+new UserService(new PostgresUserRepo());  // future
+new UserService(new FakeUserRepo());      // testing
 ```
 
-### Strategy
+Same function. Different storage. That is **polymorphism**.
 
-Swap algorithms at runtime via interface.
+**Key takeaway:** Depend on `IUserRepository`, not `UserRepo`.
 
-```typescript
-interface DiscountStrategy {
-  apply(total: number): number;
-}
+---
 
-class NoDiscount implements DiscountStrategy {
-  apply(total: number) {
-    return total;
-  }
-}
-
-class TenPercentOff implements DiscountStrategy {
-  apply(total: number) {
-    return total * 0.9;
-  }
-}
-```
-
-### Error class (your `AppError`)
+## Lesson 9: Custom error class
 
 ```typescript
 class AppError extends Error {
@@ -628,131 +347,257 @@ class AppError extends Error {
     message: string
   ) {
     super(message);
-    this.name = "AppError";
     Object.setPrototypeOf(this, new.target.prototype);
   }
 }
 ```
 
-`Object.setPrototypeOf` fixes `instanceof` when extending built-ins in some JS environments.
+Use in routes: `next(new AppError(400, "Email taken"))`  
+Use in global handler: `if (err instanceof AppError) { ... }`
+
+**Key takeaway:** `AppError` connects business failures to HTTP responses.
 
 ---
 
-## 14. OOP vs functional style in TypeScript
+## Part 2 checkpoint — rebuild from memory
 
-TypeScript supports both. Real projects mix them.
+Close this file. In a blank `practice.ts`, build:
 
-| OOP style | Functional style |
-|-----------|------------------|
-| `class UserService` | `function registerUser(repo, user)` |
-| `implements IUserRepository` | `type Repo = { save, findByEmail }` |
-| `new UserRepo()` | Factory functions |
-
-For Express backends, a common split:
-
-- **OOP / classes:** services, repositories, custom errors
-- **Functions:** route handlers, validators, utilities, `catchAsync(fn)`
-
-You do not need "complete OOP everywhere" to be productive.
-
----
-
-## 15. Practice roadmap
-
-### Level 1 — Foundations (2–3 days)
-
-- [ ] Classes, constructor, `public` / `private`
-- [ ] `implements` + one in-memory repository
-- [ ] Map `{ success, message }` in service (no HTTP yet)
-
-### Level 2 — Wiring (2–3 days)
-
-- [ ] Constructor injection
-- [ ] Express route calls service
-- [ ] `AppError` + global error handler
-
-### Level 3 — Depth (1 week)
-
-- [ ] Inheritance + `override` (small example only)
-- [ ] Abstract class or generic repository
-- [ ] Fake repo for mental testing
-- [ ] Read SOLID table again and label your `user.app.ts` layers
-
-### Level 4 — Production habits
-
-- [ ] Async repository (`Promise`)
-- [ ] Swap `InMemoryUserRepo` for DB repo without changing service
-- [ ] `catchAsync` on async routes
-
-### Capstone project
-
-Build a **Todo API** from scratch:
-
-```text
-Todo (interface)
-ITodoRepository → InMemoryTodoRepository
-TodoService (create, list, delete, toggle)
-Express routes + Zod + AppError + catchAsync
+```
+UserPro (interface)
+IUserRepository (interface)
+UserRepo (class)
+UserService (class)
 ```
 
-No copy-paste from `user.app.ts` until you are stuck for 20 minutes.
+Then wire: `const service = new UserService(new UserRepo())`.
+
+That proves Part 1 + 2 stuck.
 
 ---
 
-## Quick reference cheat sheet
+# PART 3 — Go deeper (when you're ready)
+
+Read these only after Part 2 feels comfortable.
+
+---
+
+## Lesson 10: Inheritance — reuse from a parent class
+
+**Plain English:** Child class gets parent's methods. Use when things truly **are-a** subtype.
 
 ```typescript
-// Class + access
-class Example {
-  constructor(private id: string, public name: string) {}
-  get label() { return this.name; }
+class Animal {
+  constructor(public name: string) {}
+  move(m: number) { console.log(`${this.name} moved ${m}m`); }
 }
 
-// Inheritance
-class Child extends Parent {
-  override method() { super.method(); }
+class Dog extends Animal {
+  bark() { console.log("woof"); }
 }
 
-// Contract
-interface IRepo { save(x: T): void; }
-class Repo implements IRepo { ... }
+const d = new Dog("Rex");
+d.move(5);  // from Animal
+d.bark();   // from Dog
+```
 
-// Abstract
-abstract class Base {
-  abstract run(): void;
+**`super`** — call parent constructor or method:
+```typescript
+class Employee extends Person {
+  constructor(name: string, public employeeId: string) {
+    super(name); // must call parent first
+  }
+}
+```
+
+**Override** — replace a parent method:
+```typescript
+class Circle extends Shape {
+  override area(): number {
+    return Math.PI * this.radius ** 2;
+  }
+}
+```
+
+**Key takeaway:** Inheritance = "is-a". Don't overuse it — prefer interfaces for backend code.
+
+---
+
+## Lesson 11: Composition — "has-a" beats deep inheritance
+
+```typescript
+class Logger {
+  log(msg: string) { console.log(msg); }
 }
 
-// DI
-class Service {
-  constructor(private repo: IRepo) {}
+class OrderService {
+  constructor(private logger: Logger) {}
+
+  createOrder(id: string) {
+    this.logger.log(`Order ${id} created`);
+  }
+}
+```
+
+Car **has** an engine. UserService **has** a repository. That is composition.
+
+**Key takeaway:** Pass helpers in via constructor instead of building giant class trees.
+
+---
+
+## Lesson 12: Abstract class vs interface
+
+| | Interface | Abstract class |
+|---|-----------|----------------|
+| Has method bodies? | No | Yes (some methods) |
+| Can `new` it? | N/A | No |
+| Use when | Contract only | Shared code + forced overrides |
+
+**Default choice in TypeScript backends:** `interface` for repos and services.
+
+---
+
+## Lesson 13: Generics — one class, many types
+
+```typescript
+class Stack<T> {
+  private items: T[] = [];
+  push(item: T) { this.items.push(item); }
+  pop(): T | undefined { return this.items.pop(); }
 }
 
-// Polymorphism
-function work(repo: IRepo) { repo.save(...); }
+const nums = new Stack<number>();
+nums.push(1);
+```
+
+`<T>` = "type placeholder". Like a function parameter, but for types.
+
+---
+
+## Lesson 14: SOLID — five rules in plain English
+
+| Letter | Simple meaning | Your code |
+|--------|------------------|-----------|
+| **S** | One class, one job | `UserRepo` stores, `UserService` decides |
+| **O** | Add new repos without changing service | New `PostgresUserRepo` |
+| **L** | Any `IUserRepository` works in the same slot | Swap implementations |
+| **I** | Small interfaces | Don't force unused methods |
+| **D** | Depend on interfaces, not concrete classes | `IUserRepository` not `UserRepo` |
+
+You don't memorize these on day 1. Notice them when you refactor.
+
+---
+
+## Lesson 15: Static — belongs to the class, not each object
+
+```typescript
+class MathUtil {
+  static clamp(n: number, min: number, max: number) {
+    return Math.min(max, Math.max(min, n));
+  }
+}
+
+MathUtil.clamp(15, 0, 10); // no `new` needed
+```
+
+Use for helpers. Don't overuse for app state.
+
+---
+
+# Quick reference card
+
+Copy this. Pin it while coding.
+
+```typescript
+// 1. Data shape
+interface User {
+  id: string;
+  email: string;
+}
+
+// 2. Storage contract
+interface IUserRepository {
+  save(user: User): Promise<void>;
+  findByEmail(email: string): Promise<User | undefined>;
+}
+
+// 3. Storage implementation
+class UserRepo implements IUserRepository {
+  private users: User[] = [];
+  async save(user: User) { this.users.push(user); }
+  async findByEmail(email: string) {
+    return this.users.find((u) => u.email === email);
+  }
+}
+
+// 4. Business rules
+class UserService {
+  constructor(private repo: IUserRepository) {}
+  async register(user: User) {
+    if (await this.repo.findByEmail(user.email)) {
+      return { success: false, message: "Already exists" };
+    }
+    await this.repo.save(user);
+    return { success: true, message: "Registered" };
+  }
+}
+
+// 5. Wire at startup
+const service = new UserService(new UserRepo());
 ```
 
 ---
 
-## Map to your `user.app.ts`
+# Your 7-day plan
 
-| File piece | OOP concept |
-|------------|-------------|
-| `UserPro` | Data shape (type, not a class) |
-| `IUserRepository` | Abstraction / polymorphism |
-| `UserRepo` | Encapsulation (`private users`), implements contract |
-| `UserService` | Single responsibility, dependency injection |
-| `app.ts` | Composition root — wires concrete classes |
-
-When you can explain that table without looking, you understand the OOP slice you need for backend TypeScript. Full OOP theory (multiple inheritance, metaclasses, etc.) is mostly **not** required in day-to-day TS/Node work.
+| Day | Do this |
+|-----|---------|
+| 1 | Lessons 1–2 + BankAccount exercise |
+| 2 | Lessons 3–6 + Todo repo exercise |
+| 3 | Lessons 7–9 + read your `user.app.ts` and label each part |
+| 4 | Part 2 checkpoint — rebuild from memory |
+| 5 | Lesson 10 (inheritance) — small example only |
+| 6 | Lessons 11–13 skim |
+| 7 | Capstone: Todo API (repo + service + Express route) |
 
 ---
 
-## Optional practice file
+# Capstone project
 
-Create `d8-drill/src/oop-practice.ts` and uncomment sections as you learn. Run with:
+Build a **Todo API** without copy-pasting `user.app.ts`:
+
+```
+Todo          → interface (id, title, done)
+ITodoRepository → save, findById, getAll
+InMemoryTodoRepository → private array
+TodoService   → createTodo, toggleTodo (rules)
+app.ts        → POST /todos, GET /todos
+```
+
+Add later: Zod validation, AppError, catchAsync.
+
+---
+
+# Map: guide → your files
+
+| You learned | Where it lives |
+|-------------|----------------|
+| Interface for data | `UserPro` in `user.app.ts` |
+| Storage contract | `IUserRepository` |
+| Hidden array | `private users` in `UserRepo` |
+| Business rules | `registerUser` in `UserService` |
+| Injection | `constructor(private userRepo: ...)` |
+| Wiring | `new UserRepo()` + `new UserService(...)` in `app.ts` |
+
+When you can explain every row without opening this file, you're done with the essentials.
+
+---
+
+# Practice commands
 
 ```bash
+cd d8-drill
 npx ts-node src/oop-practice.ts
 ```
 
-See companion file: `d8-drill/src/oop-practice.ts` (runnable examples for each level).
+Edit `oop-practice.ts` as you complete each lesson. Break things on purpose — that's how you learn.

@@ -1,9 +1,17 @@
 /**
- * OOP practice — run: npx ts-node src/oop-practice.ts
- * Study guide: ../../docs/typescript-oop-complete.md
+ * OOP Practice — matches docs/typescript-oop-complete.md
+ *
+ * How to use:
+ *   1. Read one lesson in the guide
+ *   2. Find the matching section below
+ *   3. Change code, break things, fix them
+ *   4. Run: npx ts-node src/oop-practice.ts
  */
 
-// --- Level 1: Class basics ---
+// =============================================================================
+// LESSON 1 — Class basics (BankAccount)
+// =============================================================================
+
 class BankAccount {
   constructor(private balance: number) {}
 
@@ -23,7 +31,11 @@ class BankAccount {
   }
 }
 
-// --- Level 2: Interface + implements (repository pattern) ---
+// =============================================================================
+// LESSONS 3–6 — Interface, implements, service, dependency injection
+// (Same pattern as user.app.ts)
+// =============================================================================
+
 interface Todo {
   id: string;
   title: string;
@@ -37,7 +49,7 @@ interface ITodoRepository {
 }
 
 class InMemoryTodoRepository implements ITodoRepository {
-  private todos: Todo[] = [];
+  private todos: Todo[] = []; // Lesson 2: private = encapsulation
 
   save(todo: Todo): void {
     const index = this.todos.findIndex((t) => t.id === todo.id);
@@ -57,9 +69,8 @@ class InMemoryTodoRepository implements ITodoRepository {
   }
 }
 
-// --- Level 3: Service + dependency injection ---
 class TodoService {
-  constructor(private repo: ITodoRepository) {}
+  constructor(private repo: ITodoRepository) {} // Lesson 6: injection
 
   createTodo(id: string, title: string): { success: boolean; message: string } {
     if (!title.trim()) {
@@ -82,7 +93,10 @@ class TodoService {
   }
 }
 
-// --- Level 4: Inheritance + override ---
+// =============================================================================
+// LESSON 10 — Inheritance (optional, Part 3)
+// =============================================================================
+
 abstract class Notifier {
   abstract send(message: string): void;
 
@@ -97,7 +111,10 @@ class ConsoleNotifier extends Notifier {
   }
 }
 
-// --- Level 5: Generics ---
+// =============================================================================
+// LESSON 13 — Generics (optional, Part 3)
+// =============================================================================
+
 class Stack<T> {
   private items: T[] = [];
 
@@ -110,22 +127,28 @@ class Stack<T> {
   }
 }
 
-// --- Demo runner ---
+// =============================================================================
+// Run all demos
+// =============================================================================
+
 function main(): void {
+  console.log("--- Lesson 1: BankAccount ---");
   const account = new BankAccount(100);
   account.deposit(50);
   account.withdraw(30);
   console.log("Balance:", account.getBalance());
 
+  console.log("\n--- Lessons 3–6: Todo repo + service ---");
   const repo = new InMemoryTodoRepository();
   const todos = new TodoService(repo);
   console.log(todos.createTodo("1", "Learn OOP"));
   console.log(todos.toggleTodo("1"));
   console.log("All todos:", repo.getAll());
 
-  const notifier = new ConsoleNotifier();
-  notifier.notify("OOP practice complete");
+  console.log("\n--- Lesson 10: Inheritance ---");
+  new ConsoleNotifier().notify("OOP practice complete");
 
+  console.log("\n--- Lesson 13: Generics ---");
   const stack = new Stack<string>();
   stack.push("a");
   stack.push("b");
